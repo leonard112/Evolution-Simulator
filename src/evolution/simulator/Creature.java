@@ -76,7 +76,7 @@ public class Creature implements java.lang.Comparable<Creature>{
 		Creature ancestor = this.ancestor;
 		Creature oldest = ancestor;
 		
-		if (ancestor != null) { oldestAndParentNames = "Parent: " + ancestor.getName(); }
+		if (ancestor != null) oldestAndParentNames = "Parent: " + ancestor.getName();
 		
 		while (ancestor != null) {
 			oldest = ancestor;
@@ -91,7 +91,7 @@ public class Creature implements java.lang.Comparable<Creature>{
 	public void setFood() { 
 		this.food = (int)(5*Math.sqrt(this.speed)*this.weight);
 		if (this.famine) { 
-			if (this.weight < 150) { this.food = (int)(3*Math.sqrt(this.speed)*this.weight); }
+			if (this.weight < 150) this.food = (int)(3*Math.sqrt(this.speed)*this.weight);
 			this.food /= 2;
 		}
 		
@@ -101,13 +101,12 @@ public class Creature implements java.lang.Comparable<Creature>{
 	
 	public void evolve(int newId, boolean minimalMutation) {
 		advanceGeneration(newId);
-		if (minimalMutation) { mutate(.25, random); }
-		else { mutate(1, random); }
+		if (minimalMutation) mutate(.25, random);
+		else mutate(1, random);
 	}
 	
 	public void advanceGeneration(int newId) {
-		this.ancestor = new Creature(this.name, this.id, this.generation, this.weight, this.carnivore, this.intelligence, 
-				this.speed, this.food, this.hunger, this.famine, this.hasAncestor, this.ancestor);
+		this.ancestor = this.copy();
 		this.id = newId;
 		this.hasAncestor = true;
 		this.generation++;
@@ -135,28 +134,28 @@ public class Creature implements java.lang.Comparable<Creature>{
 			value += plus - minus;
 		}
 		
-		if (value < 1) { value = 1; }
+		if (value < 1) value = 1;
 		
 		return value;
 	}
 	
 	public void randomIntelligenceMutation(double multiplier, Random random) {
-		if (random.nextInt(100) <= multiplier*5) { this.intelligence = random.nextDouble(); }
+		if (random.nextInt(100) <= multiplier*5) this.intelligence = random.nextDouble();
 		else {
 			double plus = multiplier*(random.nextDouble()/100);
 			double minus = multiplier*(random.nextDouble()/100);
 			this.intelligence += plus - minus;
 		}
 		
-		if (this.weight < 150) { this.intelligence /= 2; }
-		if (this.weight > 500) { this.intelligence *= 1.2; }
+		if (this.weight < 150) this.intelligence /= 2;
+		if (this.weight > 500) this.intelligence *= 1.2;
 		
-		if (this.intelligence > 1) { this.intelligence = 1; }
-		if (this.intelligence < 0) { this.intelligence = 0; }
+		if (this.intelligence > 1) this.intelligence = 1;
+		if (this.intelligence < 0) this.intelligence = 0;
 	}
 	
 	public void randomCarnivoreMutation(double multiplier, Random random) {
-		if (random.nextInt(100) <= multiplier*5) { this.carnivore = !this.carnivore; }
+		if (random.nextInt(100) <= multiplier*5) this.carnivore = !this.carnivore;
 	}
 	
 	public void updatesBasedOnIntelligence()
@@ -168,9 +167,14 @@ public class Creature implements java.lang.Comparable<Creature>{
 	{
 		if (this.carnivore) { 
 			this.intelligence *= 1.2;
-			if (this.intelligence > 1) { this.intelligence = 1; }
+			if (this.intelligence > 1) this.intelligence = 1;
 			this.speed += 5;
 		}
+	}
+	
+	public Creature copy() {
+		return new Creature(this.name, this.id, this.generation, this.weight, this.carnivore, this.intelligence, 
+				this.speed, this.food, this.hunger, this.famine, this.hasAncestor, this.ancestor); 
 	}
 	
 	public void generateName()
@@ -187,31 +191,31 @@ public class Creature implements java.lang.Comparable<Creature>{
 	}
 	
 	public char getWeightLetter() {
-		if (this.weight < 150) { return 'S'; }
-		else if (this.weight < 500) { return 'M'; }
-		else if (this.weight < 1000){ return 'L'; }
-		else { return 'H'; }
+		if (this.weight < 150) return 'S';
+		else if (this.weight < 500) return 'M';
+		else if (this.weight < 1000) return 'L';
+		else return 'H';
 	}
 	
 	public char getSpeedLetter() {
-		if (this.speed < 15) { return 'S'; }
-		else { return 'F'; }
+		if (this.speed < 15) return 'S';
+		else return 'F';
 	}
 	
 	public char getIntelligenceLetter() {
-		if (this.intelligence < .33 ) { return 'D'; }
-		else if (this.intelligence >= .33 && this.intelligence < .66) { return 'I'; }
-		else { return 'G'; }
+		if (this.intelligence < .33 ) return 'D';
+		else if (this.intelligence >= .33 && this.intelligence < .66) return 'I';
+		else return 'G';
 	}
 	
 	public char getFoodPreferenceLetter() {
-		if (this.carnivore) { return 'C'; }
-		else { return 'H'; }
+		if (this.carnivore) return 'C';
+		else return 'H';
 	}
 	
 	public char getFamineLetter() {
-		if (this.famine) { return 'F'; }
-		else { return 'P'; }
+		if (this.famine) return 'F';
+		else return 'P';
 	}
 	
 	public int compareTo(Creature creature)
