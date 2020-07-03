@@ -21,13 +21,13 @@ public class Main {
 		String input;
 		
 		System.out.println(PURPLE_BOLD + "Wecome to the Evolution Simulator!\n" + RESET);
-		int generationIncrement = getPositiveInteger("Please enter the number of generations you want to advance each time you let the creatures evolve: ", false);
-		int creatureCount = getPositiveInteger("Please enter the number of creatures that you want (must be EVEN): ", true);
+		int generationIncrement = getPositiveInteger("Please enter the number of generations you want to advance each time you let the creatures evolve: ", false, true);
+		int creatureCount = getPositiveInteger("Please enter the number of creatures that you want (must be EVEN): ", true, true);
+		double percentDie = getPercentageFromIntegerInput("Please Enter the percentage of creatures that you would like to die each generation (INTEGER 0-100): ");
 		
-		simulator = new EvolutionSimulator(creatureCount, generationIncrement, .5);
+		simulator = new EvolutionSimulator(creatureCount, generationIncrement, percentDie);
 		
 		boolean continueLoop = true;
-		int counter = 1;
 		
 		do {
 			System.out.println();
@@ -37,20 +37,19 @@ public class Main {
 			
 			command = input.split(" ", 2);
 			
-			switch(command[0]) {
+			switch(command[0]) { 
 				case "e":
 					if (command.length == 1) {
 						System.out.println("Advancing to generation " + (simulator.getGeneration() + simulator.getGenerationIncrement()) + " ...");
 						for (int i = 0; i < simulator.getGenerationIncrement(); i++) { simulator.evolve(); }
 						System.out.println("done.");
 						System.out.println();
-						counter++;
-						showThisGeneration(counter);
+						showThisGeneration();
 					}
 					else { printRed("The \"e\" command takes no arguments."); }
 					break;
 				case "sc":
-					if (command.length == 1) { showThisGeneration(simulator.getGeneration()); }
+					if (command.length == 1) { showThisGeneration(); }
 					else { printRed("The \"sc\" command takes no arguments."); }
 					break;
 				case "help":
@@ -92,6 +91,13 @@ public class Main {
 					if (command.length == 1) { showStatistics(); }
 					else { printRed("The \"stats\" command takes no arguments."); }
 					break;
+				case "tf":
+					if (command.length == 1) { 
+						simulator.toggleFamine();
+						System.out.println("Famine will be set to \"" +  BLACK_BOLD + simulator.getFamine() +  RESET + "\" for the generations following this one.");
+					}
+					else { printRed("The \"tf\" command takes no arguments."); }
+					break;
 				case "geninc":
 					if (command.length == 2) { setGenerationIncrement(command[1]); }
 					else { printRed("The \"geninc\" command requires exactly one NON-ZERO and NON-NEGATIVE integer paramter"); }
@@ -104,6 +110,8 @@ public class Main {
 				case "exit":
 					if (command.length == 1) { continueLoop = false; }
 					else { printRed("The \"exit\" command takes no arguments."); }
+					break;
+				case "":
 					break;
 				default:
 					System.out.println("Command Not found.");
@@ -133,6 +141,7 @@ public class Main {
 		showCommand("ms", "See the all time MOST successful creatures.");		
 		showCommand("sc", "Show the creatures that are part of this generation.");
 		showCommand("stats", "Show statistics for all generations.");
+		showCommand("tf", "Toggle famine. This affects all generations following the current one.");
 		showCommand("va <creature-name>", "View all of a creatures ancestors.");
 	}
 	
@@ -152,20 +161,23 @@ public class Main {
 		}
 	}
 	
-	public static void showThisGeneration(int generation) {
-		printHeader("GENERATION:" + generation, BLUE_BOLD);
+	public static void showThisGeneration() {
+		printHeader("GENERATION:" + simulator.getGeneration(), BLUE_BOLD);
 		printCreatureTableHeading(BLUE_BOLD);
 		showGenerationAndSurvival();
 	}
 	
 	public static void showGenerationAndSurvival()
 	{
-		for (Creature creature : simulator.getSuccessful()) {
-			System.out.println(GREEN_BACKGROUND + BLACK_BOLD + creature.toString() + RESET);
+		if (!simulator.getCreatures().isEmpty()) {
+			for (Creature creature : simulator.getSuccessful()) {
+				System.out.println(GREEN_BACKGROUND + BLACK_BOLD + creature.toString() + RESET);
+			}
+			for (Creature creature : simulator.getUnsuccessful()) {
+				System.out.println(RED_BACKGROUND + WHITE_BOLD + creature.toString() + RESET);
+			}
 		}
-		for (Creature creature : simulator.getUnsuccessful()) {
-			System.out.println(RED_BACKGROUND + WHITE_BOLD + creature.toString() + RESET);
-		}
+		else printRed("No creatures to display... They all must have died.");
 	}
 	
 	public static void showLimitedFamilyTree() {
@@ -232,6 +244,7 @@ public class Main {
 		int averageSpeed = totalSpeed/size;
 		int averageFood = totalFood/size;
 		int averageHunger = totalHunger/size;
+		System.out.println((double) averageFood/averageHunger);
 		String averageFoodHungerRatio = decimalFormat.format((double) averageFood/averageHunger);
 		
 		Creature sample = max(creatures, creatureComparator);
