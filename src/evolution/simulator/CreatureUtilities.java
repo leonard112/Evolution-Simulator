@@ -28,7 +28,7 @@ public class CreatureUtilities {
     public static final String PURPLE_BACKGROUND = "\033[45m";
     public static final String CYAN_BACKGROUND = "\033[46m";
 	
-	public static int getPositiveInteger(String prompt, boolean requireEvenOnly) {
+	public static int getPositiveInteger(String prompt, boolean requireEvenOnly, boolean requireGreaterThanOne) {
 		String input;
 		int i = 0;
 		boolean continueLoop = true;
@@ -38,19 +38,43 @@ public class CreatureUtilities {
 				System.out.print(BLACK_BOLD + prompt + RESET);
 				input = scanner.nextLine();
 				i = Integer.parseInt(input); 
-				if (i < 1) { throw new NumberFormatException(); }
+				if (i < 0) throw new IllegalArgumentException();
+				if (requireGreaterThanOne) 
+					if (i < 1) throw new IllegalArgumentException();
 				if (requireEvenOnly) {
-					if ((double)(i/2) != (double)i/2) { throw new NumberFormatException(); }
+					if ((double)(i/2) != (double)i/2) throw new IllegalArgumentException();
 				}
 				continueLoop = false;
 			}
 			catch(NumberFormatException numberFormatException) { 
-				if (requireEvenOnly) { System.out.println(RED_BOLD + "Please only enter a NON-ZERO, NON-NEGATIVE, and EVEN integer." + RESET); }
-				else { System.out.println(RED_BOLD + "Please only enter a NON-ZERO and NON-NEGATIVE integer." + RESET); }
+				printRed("Please only enter an INTEGER.");
+			}
+			catch(IllegalArgumentException IllegalArgumentException) { 
+				if (requireEvenOnly) printRed("Please only enter a NON-ZERO, NON-NEGATIVE, and EVEN integer.");
+				else if (requireGreaterThanOne) printRed("Please only enter an integer that is GREATER THAN 1.");
+				else printRed("Please only enter a NON-NEGATIVE integer.");
 			}
 		} while(continueLoop);
 		
 		return i;
+	}
+	
+	public static double getPercentageFromIntegerInput(String prompt) {
+		int percent = 0;
+		boolean continueLoop = true;
+		
+		do {
+			try {
+				percent = getPositiveInteger(prompt, false, false);
+				if (percent < 0 || percent > 100) { throw new IllegalArgumentException(); }
+				continueLoop = false;
+			}
+			catch(IllegalArgumentException IllegalArgumentException) { 
+				printRed("Please only enter an integer between 0 and 100"); 
+			}
+		} while(continueLoop);
+		
+		return (double) percent/100;
 	}
 	
 	public static void printHeader(String header, String color) {
